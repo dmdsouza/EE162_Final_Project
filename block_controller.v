@@ -10,25 +10,35 @@ module block_controller(
 	output reg [11:0] background
    );
 	wire block_fill;
-	
+	wire apple_fill;
+	integer appleCount = 0;
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg [9:0] xpos, ypos;
+	reg [9:0] appXPos, appYPos;
 	reg [1:0] direction;
-	reg [11:0] 
+	reg apple, apple_inX, apple_inY;
 	parameter RED   = 12'b1111_0000_0000;
+	parameter BLUE = 12'b1111_1111_0000;
+	parameter SPEED = 1'd1;
 	
 	/*when outputting the rgb value in an always block like this, make sure to include the if(~bright) statement, as this ensures the monitor 
 	will output some data to every pixel and not just the images you are trying to display*/
 	always@ (*) begin
     	if(~bright )	//force black if not inside the display area
 			rgb = 12'b0000_0000_0000;
+		else if (apple_fill) 
+			rgb = RED; 
 		else if (block_fill) 
 			rgb = RED; 
 		else	
 			rgb=background;
 	end
+
+	
+	assign apple_fill = vCount>=(appYPos-5) && vCount<=(appYPos+5) && hCount>=(appXPos-5) && hCount<=(appXPos+5);
+	
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
-	assign block_fill=vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+	assign block_fill= vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
 	
 	always@(posedge clk, posedge rst) 
 	begin
@@ -37,6 +47,8 @@ module block_controller(
 			//rough values for center of screen
 			xpos<=450;
 			ypos<=250;
+			appXPos<=450;
+			appYPos <= 250;
 			direction<=2'b00;
 		end
 		else if (clk) begin
@@ -66,22 +78,22 @@ module block_controller(
 			end
 			
 			if(direction == 2'b00) begin
-				xpos<=xpos+2; //change the amount you increment to make the speed faster 
+				xpos<=xpos+SPEED; //change the amount you increment to make the speed faster 
 				if(xpos==800) //these are rough values to attempt looping around, you can fine-tune them to make it more accurate- refer to the block comment above
 					xpos<=150;
 			end
 			else if(direction == 2'b01) begin
-				xpos<=xpos-2;
+				xpos<=xpos-SPEED;
 				if(xpos==150)
 					xpos<=800;
 			end
 			else if(direction == 2'b10) begin
-				ypos<=ypos-2;
+				ypos<=ypos-SPEED;
 				if(ypos==34)
 					ypos<=514;
 			end
 			else if(direction == 2'b11) begin
-				ypos<=ypos+2;
+				ypos<=ypos+SPEED;
 				if(ypos==514)
 					ypos<=34;
 			end
@@ -103,6 +115,37 @@ module block_controller(
 			// else if(up)
 				// background <= 12'b0000_0000_1111;
 	end
+	
+	// always@(posedge clk)
+	// begin	
+		// appleCount = appleCount + 1;
+		// apple_inX <= (xpos > appXPos && xpos < (appXPos + 10));
+		// apple_inY <= (ypos > appYPos && ypos < (appYPos + 10));
+		// apple = apple_inX && apple_inY;
+		// if(appleCount == 1)
+		// begin
+			// appXPos <= 320;
+			// appYPos <= 100;
+		// end
+		// else
+		// begin
+			// if(apple)
+			// begin
+				// if(appleCount%2 == 0)
+				// begin
+					// appXPos <= 320;
+					// appYPos <= 100;
+				// end
+				// else
+				// begin 
+					// appXPos <= 320;
+					// appYPos <= 100;
+				// end
+			// end
+		// end
+	// end
+			
+			
 
 	
 	
