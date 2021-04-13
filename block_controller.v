@@ -11,14 +11,15 @@ module block_controller(
    );
 	wire block_fill;
 	wire apple_fill;
-	integer appleCount = 0;
+	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg [9:0] xpos, ypos;
 	reg [9:0] appXPos, appYPos;
 	reg [1:0] direction;
+	reg [5:0] appleCount;
 	reg apple, apple_inX, apple_inY;
 	parameter RED   = 12'b1111_0000_0000;
-	parameter BLUE = 12'b1111_1111_0000;
+	parameter YELLOW = 12'b1111_1111_0000;
 	parameter SPEED = 1'd1;
 	
 	/*when outputting the rgb value in an always block like this, make sure to include the if(~bright) statement, as this ensures the monitor 
@@ -27,7 +28,7 @@ module block_controller(
     	if(~bright )	//force black if not inside the display area
 			rgb = 12'b0000_0000_0000;
 		else if (apple_fill) 
-			rgb = RED; 
+			rgb = YELLOW; 
 		else if (block_fill) 
 			rgb = RED; 
 		else	
@@ -35,7 +36,7 @@ module block_controller(
 	end
 
 	
-	assign apple_fill = vCount>=(appYPos-5) && vCount<=(appYPos+5) && hCount>=(appXPos-5) && hCount<=(appXPos+5);
+	assign apple_fill = vCount>=(appYPos-2) && vCount<=(appYPos+2) && hCount>=(appXPos-2) && hCount<=(appXPos+2);
 	
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
 	assign block_fill= vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
@@ -47,8 +48,7 @@ module block_controller(
 			//rough values for center of screen
 			xpos<=450;
 			ypos<=250;
-			appXPos<=450;
-			appYPos <= 250;
+			
 			direction<=2'b00;
 		end
 		else if (clk) begin
@@ -97,6 +97,9 @@ module block_controller(
 				if(ypos==514)
 					ypos<=34;
 			end
+			
+			
+			
 		end
 	end
 	
@@ -115,6 +118,24 @@ module block_controller(
 			// else if(up)
 				// background <= 12'b0000_0000_1111;
 	end
+	
+	
+	always@(posedge clk, posedge rst)
+	begin
+		if(rst)
+		begin
+			appXPos<=650;
+			appYPos <= 150;
+			appleCount <= 0;
+		end
+	end
+		// else if(clk)
+		// begin
+		// //changing the position of apple by detecting if the square has touched the apple
+			// if(
+			// vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+			
+	
 	
 	// always@(posedge clk)
 	// begin	
