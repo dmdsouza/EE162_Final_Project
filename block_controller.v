@@ -36,8 +36,6 @@ module block_controller(
 	end
 	
 	//head collides with any elements in the fifo
-	//collision condition
-	// |appXPos - xpos| >= 2 
 	assign apple_fill = vCount>=(appYPos-2) && vCount<=(appYPos+2) && hCount>=(appXPos-2) && hCount<=(appXPos+2);
 	
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
@@ -120,7 +118,7 @@ module block_controller(
 	//the background color reflects the most recent button press
 	always@(posedge clk, posedge rst) begin
 		if(rst)
-			background <= 12'b1111_1111_1111;
+			background <= 12'b0000_1111_1111;
 		else 
 			background <= 12'b0000_1111_1111;
 			//if(right)
@@ -138,18 +136,26 @@ module block_controller(
 	begin
 		if(rst)
 		begin
-			appXPos<=650;
+			appXPos <= 650;
 			appYPos <= 150;
 			appleCount <= 0;
 		end
-		//else 
-		/* if(count is odd)
-			appXPos<=650;
-			appYPos <= 150;
-			else
-			appXPos<=350;
-			appYPos <= 250;
-		*/
+		else begin
+			//logic to determine if the xpos and ypos are in the applefill range
+			// collison with apple detection
+			if( ((xpos -5) < (appXPos+2)) && ((xpos +5) > (appXPos-2)) && ((ypos-5) < (appYPos+2)) && ((ypos+5) > (appYPos-2))) begin
+				if(appleCount[0] == 1)begin //odd
+					appXPos <= 650;
+					appYPos <= 150;
+					appleCount <= appleCount + 1'b1;
+				end
+				else begin //even
+					appXPos <= 350;
+					appYPos <= 250;
+					appleCount <= appleCount + 1'b1;
+				end
+			end					
+		end
 	end
 		// else if(clk)
 		// begin
