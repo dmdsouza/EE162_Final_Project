@@ -34,12 +34,20 @@ module block_controller(
 		else	
 			rgb=background;
 	end
-
 	
+	//head collides with any elements in the fifo
+	//collision condition
+	// |appXPos - xpos| >= 2 
 	assign apple_fill = vCount>=(appYPos-2) && vCount<=(appYPos+2) && hCount>=(appXPos-2) && hCount<=(appXPos+2);
 	
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
+		//{}{}{}{}{}
 	assign block_fill= vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+	//for(loop of assign)
+	//A[i] ->FIFO 
+	//A[i] = 000000000 or {xpos,ypos}
+	//assign blockfill1 = A[i] && vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+	//....assign blockfill20
 	
 	always@(posedge clk, posedge rst) 
 	begin
@@ -78,22 +86,28 @@ module block_controller(
 			end
 			
 			if(direction == 2'b00) begin
-				xpos<=xpos+SPEED; //change the amount you increment to make the speed faster 
+				//Ax[i]				= {324,234} {0000,0000,000} 
+				//Ay[i] = {000,000,000}
+				xpos<=xpos+SPEED; //A[0] <= A[0]={0000,0000}.xpos + SPEED;
+				//FIFO for(int i = 0; i < length_of_array; i ++)
+				//  A[i] <= A[i+1]
+				//A[0] 
+				//change the amount you increment to make the speed faster 
 				if(xpos==800) //these are rough values to attempt looping around, you can fine-tune them to make it more accurate- refer to the block comment above
 					xpos<=150;
 			end
 			else if(direction == 2'b01) begin
-				xpos<=xpos-SPEED;
+				xpos<=xpos-SPEED; //A[0] <= A[0] + SPEED;
 				if(xpos==150)
 					xpos<=800;
 			end
 			else if(direction == 2'b10) begin
-				ypos<=ypos-SPEED;
+				ypos<=ypos-SPEED; //A[0] <= A[0] + SPEED;
 				if(ypos==34)
 					ypos<=514;
 			end
 			else if(direction == 2'b11) begin
-				ypos<=ypos+SPEED;
+				ypos<=ypos+SPEED; //A[0] <= A[0] + SPEED;
 				if(ypos==514)
 					ypos<=34;
 			end
@@ -128,6 +142,14 @@ module block_controller(
 			appYPos <= 150;
 			appleCount <= 0;
 		end
+		//else 
+		/* if(count is odd)
+			appXPos<=650;
+			appYPos <= 150;
+			else
+			appXPos<=350;
+			appYPos <= 250;
+		*/
 	end
 		// else if(clk)
 		// begin
