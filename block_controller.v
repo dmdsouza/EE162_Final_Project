@@ -17,6 +17,8 @@ module block_controller(
 	reg [9:0] appXPos, appYPos;
 	reg [1:0] direction;
 	reg [5:0] appleCount;
+	reg [9:0] block_fill_x [9:0];
+	reg [9:0] block_fill_y [9:0];
 	reg apple, apple_inX, apple_inY;
 	parameter RED   = 12'b1111_0000_0000;
 	parameter YELLOW = 12'b1111_1111_0000;
@@ -31,6 +33,15 @@ module block_controller(
 			rgb = YELLOW; 
 		else if (block_fill) 
 			rgb = RED; 
+		else if(block_fill1)
+			rgb = RED;
+		else if(block_fill2)
+			rgb = RED;
+		else if(block_fill3)
+			rgb = RED;
+		else if(block_fill4)
+			rgb = RED;
+			
 		else	
 			rgb=background;
 	end
@@ -41,12 +52,16 @@ module block_controller(
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
 		//{}{}{}{}{}
 	assign block_fill= vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+	assign block_fill1 = vCount>=(block_fill_y[1]-5) && vCount<=(block_fill_y[1]+5) && hCount>=(block_fill_x[1]-5) && hCount<=(block_fill_x[1]+5);
+	assign block_fill2 = vCount>=(block_fill_y[2]-5) && vCount<=(block_fill_y[2]+5) && hCount>=(block_fill_x[2]-5) && hCount<=(block_fill_x[2]+5);
+	assign block_fill3 = vCount>=(block_fill_y[3]-5) && vCount<=(block_fill_y[3]+5) && hCount>=(block_fill_x[3]-5) && hCount<=(block_fill_x[3]+5);
+	assign block_fill4 = vCount>=(block_fill_y[4]-5) && vCount<=(block_fill_y[4]+5) && hCount>=(block_fill_x[4]-5) && hCount<=(block_fill_x[4]+5);
 	//for(loop of assign)
 	//A[i] ->FIFO 
 	//A[i] = 000000000 or {xpos,ypos}
 	//assign blockfill1 = A[i] && vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
 	//....assign blockfill20
-	
+	integer i ;
 	always@(posedge clk, posedge rst) 
 	begin
 		if(rst)
@@ -56,6 +71,13 @@ module block_controller(
 			ypos<=250;
 			
 			direction<=2'b00;
+			for(i = 0; i < 10; i = i+1)
+			begin
+				block_fill_x[i] <= 10'b0000000000;
+				block_fill_y[i] <= 10'b0000000000;
+			end
+			block_fill_x[0] <= 450;
+			block_fill_y[0] <= 250;
 		end
 		else if (clk) begin
 		
@@ -87,27 +109,50 @@ module block_controller(
 				//Ax[i]				= {324,234} {0000,0000,000} 
 				//Ay[i] = {000,000,000}
 				xpos<=xpos+SPEED; //A[0] <= A[0]={0000,0000}.xpos + SPEED;
+				
+				block_fill_x[0] <= block_fill_x[0] + SPEED;
+				block_fill_y[0] <= block_fill_y[0] + SPEED;
 				//FIFO for(int i = 0; i < length_of_array; i ++)
 				//  A[i] <= A[i+1]
 				//A[0] 
 				//change the amount you increment to make the speed faster 
 				if(xpos==800) //these are rough values to attempt looping around, you can fine-tune them to make it more accurate- refer to the block comment above
+				begin
 					xpos<=150;
+					block_fill_x[0] <= 150;
+				end
+					
 			end
 			else if(direction == 2'b01) begin
 				xpos<=xpos-SPEED; //A[0] <= A[0] + SPEED;
-				if(xpos==150)
+				block_fill_x[0] <= block_fill_y[0] - SPEED;
+				if(xpos==150)begin
 					xpos<=800;
+					block_fill_x[0] <= 800;
+				end
 			end
 			else if(direction == 2'b10) begin
 				ypos<=ypos-SPEED; //A[0] <= A[0] + SPEED;
-				if(ypos==34)
+				block_fill_y[0] <= block_fill_y[0] - SPEED;
+				if(ypos==34)begin
 					ypos<=514;
+					block_fill_y[0] <= 514;
+				end
 			end
 			else if(direction == 2'b11) begin
 				ypos<=ypos+SPEED; //A[0] <= A[0] + SPEED;
-				if(ypos==514)
+				block_fill_y[0] <= block_fill_y[0] + SPEED;
+				if(ypos==514) begin
 					ypos<=34;
+					block_fill_y[0] <= 34;
+				end
+			end
+			//updating the values in the fifo
+			block_fill_x[0] <= xpos;
+			block_fill_y[0] <= ypos;
+			for(i = 0; i < appleCount; i = i+1)begin
+				block_fill_x[i+1] <= block_fill_x[i];
+				block_fill_y[i+1] <= block_fill_y[i];
 			end
 			
 			
