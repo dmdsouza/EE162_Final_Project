@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 module block_controller(
+	input vga_clk,
 	input clk, //this clock must be a slow enough clock to view the changing positions of the objects
 	input bright,
 	input rst,
@@ -13,24 +14,29 @@ module block_controller(
 	wire apple_fill;
 	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
+	reg game_over;
 	reg [9:0] xpos, ypos;
 	reg [9:0] appXPos, appYPos;
 	reg [1:0] direction;
 	reg [5:0] appleCount;
 	reg [9:0] block_fill_x [20:0];
 	reg [9:0] block_fill_y [20:0];
-	reg [1:0] direction_fifo [9:0];
+	reg [1:0] prev_direction;
 	reg apple, apple_inX, apple_inY;
 	parameter RED   = 12'b1111_0000_0000;
 	parameter YELLOW = 12'b1111_1111_0000;
 	parameter BLUE =  12'b0000_0000_1111;
-	parameter SPEED = 5;
+	parameter GREEN = 12'b0000_1111_0000;
+	parameter SPEED = 10;
+	integer i, j ;
 	
 	/*when outputting the rgb value in an always block like this, make sure to include the if(~bright) statement, as this ensures the monitor 
 	will output some data to every pixel and not just the images you are trying to display*/
-	always@ (*) begin
+	always@ (vga_clk) begin
     	if(~bright )	//force black if not inside the display area
 			rgb = 12'b0000_0000_0000;
+		else if(game_over)
+			rgb = GREEN;
 		else if (apple_fill) 
 			rgb = YELLOW; 
 		else if (block_fill) 
@@ -111,7 +117,7 @@ module block_controller(
 	//A[i] = 000000000 or {xpos,ypos}
 	//assign blockfill1 = A[i] && vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
 	//....assign blockfill20
-	integer i ;
+	
 	always@(posedge clk, posedge rst) 
 	begin
 		if(rst)
@@ -122,15 +128,15 @@ module block_controller(
 			
 			direction<=2'b00;
 			
+			prev_direction <= 2'b00;
+			
 			for(i = 0; i < 10; i = i+1)
 			begin
 				block_fill_x[i] <= 10'b0000000000;
 				block_fill_y[i] <= 10'b0000000000;
-				direction_fifo[i] <= 2'b00;
 			end
 			block_fill_x[0] <= 450;
 			block_fill_y[0] <= 250;
-			direction_fifo[0] <= 2'b00;
 		end
 		else if (clk) begin
 		
@@ -141,28 +147,26 @@ module block_controller(
 			corresponds to ~(783,515).  
 		*/
 			//makes the direction continuous until a button changes it's direction
-			if(right)
+			if(right && prev_direction != 2'b01) //if the prev_direction was not left, can be done without prev_direction variable but for readibilty included
 			begin
 				direction <= 2'b00;
-				direction_fifo[0] <= 2'b00;
+				prev_direction <= 2'b00;
 			end
-			else if(left)
+			else if(left && prev_direction != 2'b00) //if the prev_direction was not right
 			begin
 				direction <= 2'b01;
-				direction_fifo[0] <= 2'b01;
+				prev_direction <= 2'b01;
 			end
-			else if(up)
+			else if(up && prev_direction != 2'b11) //if the prev_direction was not down
 			begin
 				direction <= 2'b10;
-				direction_fifo[0] <= 2'b10;
+				prev_direction <= 2'b10;
 			end
-			else if(down)
+			else if(down && prev_direction != 2'b10) //if the prev_direction was not up
 			begin
 				direction <= 2'b11;
-				direction_fifo[0] <= 2'b11;
+				prev_direction <= 2'b11;
 			end
-			// block_fill_x[0] <= xpos;
-			// block_fill_y[0] <= ypos;
 			if(direction == 2'b00) begin
 				//Ax[i]				= {324,234} {0000,0000,000} 
 				//Ay[i] = {000,000,000}
@@ -246,7 +250,7 @@ module block_controller(
 				// background <= 12'b0000_0000_1111;
 	end
 	
-	
+	//apple position
 	always@(posedge clk, posedge rst)
 	begin
 		if(rst)
@@ -272,6 +276,25 @@ module block_controller(
 			end					
 		end
 	end
+	
+	
+	
+	//detect collison with snake body and trigger game_over
+	always@(posedge clk, posedge rst)
+	begin
+		if(rst)
+		begin
+			game_over <= 0;
+		end
+		else begin
+			for(j = 1; j < appleCount; j = j + 1) begin
+				if( ((xpos -5) < (block_fill_x[i]+2)) && ((xpos +5) > (block_fill_x[i]-2)) && ((ypos-5) < (block_fill_y[i]+2)) && ((ypos+5) > (block_fill_y[i]-2))) begin
+					game_over <= 1;
+				end
+			end
+		end			
+	end
+	
 		// else if(clk)
 		// begin
 		// //changing the position of apple by detecting if the square has touched the apple
