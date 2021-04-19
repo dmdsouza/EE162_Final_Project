@@ -9,7 +9,7 @@ module block_controller(
 	output reg [11:0] rgb,
 	output reg [11:0] background
    );
-	wire block_fill;
+	wire block_fill,block_fill1,block_fill2,block_fill3,block_fill4;
 	wire apple_fill;
 	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
@@ -17,12 +17,14 @@ module block_controller(
 	reg [9:0] appXPos, appYPos;
 	reg [1:0] direction;
 	reg [5:0] appleCount;
-	reg [9:0] block_fill_x [9:0];
-	reg [9:0] block_fill_y [9:0];
+	reg [9:0] block_fill_x [20:0];
+	reg [9:0] block_fill_y [20:0];
+	reg [1:0] direction_fifo [9:0];
 	reg apple, apple_inX, apple_inY;
 	parameter RED   = 12'b1111_0000_0000;
 	parameter YELLOW = 12'b1111_1111_0000;
-	parameter SPEED = 1'd1;
+	parameter BLUE =  12'b0000_0000_1111;
+	parameter SPEED = 5;
 	
 	/*when outputting the rgb value in an always block like this, make sure to include the if(~bright) statement, as this ensures the monitor 
 	will output some data to every pixel and not just the images you are trying to display*/
@@ -34,12 +36,44 @@ module block_controller(
 		else if (block_fill) 
 			rgb = RED; 
 		else if(block_fill1)
-			rgb = RED;
+			rgb = BLUE;
 		else if(block_fill2)
 			rgb = RED;
 		else if(block_fill3)
-			rgb = RED;
+			rgb = BLUE;
 		else if(block_fill4)
+			rgb = RED;
+		else if(block_fill5)
+			rgb = BLUE;
+		else if(block_fill6)
+			rgb = RED;
+		else if(block_fill7)
+			rgb = BLUE;
+		else if(block_fill8)
+			rgb = RED;
+		else if(block_fill9)
+			rgb = BLUE;
+		else if(block_fill10)
+			rgb = RED;
+		else if(block_fill11)
+			rgb = BLUE;
+		else if(block_fill12)
+			rgb = RED;
+		else if(block_fill13)
+			rgb = BLUE;
+		else if(block_fill14)
+			rgb = RED;
+		else if(block_fill15)
+			rgb = BLUE;
+		else if(block_fill16)
+			rgb = RED;
+		else if(block_fill17)
+			rgb = BLUE;
+		else if(block_fill18)
+			rgb = RED;
+		else if(block_fill19)
+			rgb = BLUE;
+		else if(block_fill20)
 			rgb = RED;
 			
 		else	
@@ -56,6 +90,22 @@ module block_controller(
 	assign block_fill2 = vCount>=(block_fill_y[2]-5) && vCount<=(block_fill_y[2]+5) && hCount>=(block_fill_x[2]-5) && hCount<=(block_fill_x[2]+5);
 	assign block_fill3 = vCount>=(block_fill_y[3]-5) && vCount<=(block_fill_y[3]+5) && hCount>=(block_fill_x[3]-5) && hCount<=(block_fill_x[3]+5);
 	assign block_fill4 = vCount>=(block_fill_y[4]-5) && vCount<=(block_fill_y[4]+5) && hCount>=(block_fill_x[4]-5) && hCount<=(block_fill_x[4]+5);
+	assign block_fill5 = vCount>=(block_fill_y[5]-5) && vCount<=(block_fill_y[5]+5) && hCount>=(block_fill_x[5]-5) && hCount<=(block_fill_x[5]+5);
+	assign block_fill6 = vCount>=(block_fill_y[6]-5) && vCount<=(block_fill_y[6]+5) && hCount>=(block_fill_x[6]-5) && hCount<=(block_fill_x[6]+5);
+	assign block_fill7 = vCount>=(block_fill_y[7]-5) && vCount<=(block_fill_y[7]+5) && hCount>=(block_fill_x[7]-5) && hCount<=(block_fill_x[7]+5);
+	assign block_fill8 = vCount>=(block_fill_y[8]-5) && vCount<=(block_fill_y[8]+5) && hCount>=(block_fill_x[8]-5) && hCount<=(block_fill_x[8]+5);
+	assign block_fill9 = vCount>=(block_fill_y[9]-5) && vCount<=(block_fill_y[9]+5) && hCount>=(block_fill_x[9]-5) && hCount<=(block_fill_x[9]+5);
+	assign block_fill10 = vCount>=(block_fill_y[10]-5) && vCount<=(block_fill_y[10]+5) && hCount>=(block_fill_x[10]-5) && hCount<=(block_fill_x[10]+5);
+	assign block_fill11 = vCount>=(block_fill_y[11]-5) && vCount<=(block_fill_y[11]+5) && hCount>=(block_fill_x[11]-5) && hCount<=(block_fill_x[11]+5);
+	assign block_fill12 = vCount>=(block_fill_y[12]-5) && vCount<=(block_fill_y[12]+5) && hCount>=(block_fill_x[12]-5) && hCount<=(block_fill_x[12]+5);
+	assign block_fill13 = vCount>=(block_fill_y[13]-5) && vCount<=(block_fill_y[13]+5) && hCount>=(block_fill_x[13]-5) && hCount<=(block_fill_x[13]+5);
+	assign block_fill14 = vCount>=(block_fill_y[14]-5) && vCount<=(block_fill_y[14]+5) && hCount>=(block_fill_x[14]-5) && hCount<=(block_fill_x[14]+5);
+	assign block_fill15 = vCount>=(block_fill_y[15]-5) && vCount<=(block_fill_y[15]+5) && hCount>=(block_fill_x[15]-5) && hCount<=(block_fill_x[15]+5);
+	assign block_fill16 = vCount>=(block_fill_y[16]-5) && vCount<=(block_fill_y[16]+5) && hCount>=(block_fill_x[16]-5) && hCount<=(block_fill_x[16]+5);
+	assign block_fill17 = vCount>=(block_fill_y[17]-5) && vCount<=(block_fill_y[17]+5) && hCount>=(block_fill_x[17]-5) && hCount<=(block_fill_x[17]+5);
+	assign block_fill18 = vCount>=(block_fill_y[18]-5) && vCount<=(block_fill_y[18]+5) && hCount>=(block_fill_x[18]-5) && hCount<=(block_fill_x[18]+5);
+	assign block_fill19 = vCount>=(block_fill_y[19]-5) && vCount<=(block_fill_y[19]+5) && hCount>=(block_fill_x[19]-5) && hCount<=(block_fill_x[19]+5);
+	assign block_fill20 = vCount>=(block_fill_y[20]-5) && vCount<=(block_fill_y[20]+5) && hCount>=(block_fill_x[20]-5) && hCount<=(block_fill_x[20]+5);
 	//for(loop of assign)
 	//A[i] ->FIFO 
 	//A[i] = 000000000 or {xpos,ypos}
@@ -71,13 +121,16 @@ module block_controller(
 			ypos<=250;
 			
 			direction<=2'b00;
+			
 			for(i = 0; i < 10; i = i+1)
 			begin
 				block_fill_x[i] <= 10'b0000000000;
 				block_fill_y[i] <= 10'b0000000000;
+				direction_fifo[i] <= 2'b00;
 			end
 			block_fill_x[0] <= 450;
 			block_fill_y[0] <= 250;
+			direction_fifo[0] <= 2'b00;
 		end
 		else if (clk) begin
 		
@@ -91,27 +144,31 @@ module block_controller(
 			if(right)
 			begin
 				direction <= 2'b00;
+				direction_fifo[0] <= 2'b00;
 			end
 			else if(left)
 			begin
 				direction <= 2'b01;
+				direction_fifo[0] <= 2'b01;
 			end
 			else if(up)
 			begin
 				direction <= 2'b10;
+				direction_fifo[0] <= 2'b10;
 			end
 			else if(down)
 			begin
 				direction <= 2'b11;
+				direction_fifo[0] <= 2'b11;
 			end
-			
+			// block_fill_x[0] <= xpos;
+			// block_fill_y[0] <= ypos;
 			if(direction == 2'b00) begin
 				//Ax[i]				= {324,234} {0000,0000,000} 
 				//Ay[i] = {000,000,000}
 				xpos<=xpos+SPEED; //A[0] <= A[0]={0000,0000}.xpos + SPEED;
 				
 				block_fill_x[0] <= block_fill_x[0] + SPEED;
-				block_fill_y[0] <= block_fill_y[0] + SPEED;
 				//FIFO for(int i = 0; i < length_of_array; i ++)
 				//  A[i] <= A[i+1]
 				//A[0] 
@@ -125,7 +182,7 @@ module block_controller(
 			end
 			else if(direction == 2'b01) begin
 				xpos<=xpos-SPEED; //A[0] <= A[0] + SPEED;
-				block_fill_x[0] <= block_fill_y[0] - SPEED;
+				block_fill_x[0] <= block_fill_x[0] - SPEED;
 				if(xpos==150)begin
 					xpos<=800;
 					block_fill_x[0] <= 800;
@@ -148,11 +205,24 @@ module block_controller(
 				end
 			end
 			//updating the values in the fifo
-			block_fill_x[0] <= xpos;
-			block_fill_y[0] <= ypos;
+			
 			for(i = 0; i < appleCount; i = i+1)begin
 				block_fill_x[i+1] <= block_fill_x[i];
 				block_fill_y[i+1] <= block_fill_y[i];
+				// if(direction_fifo[i] == 2'b00)begin
+					// block_fill_x[i+1] <= block_fill_x[i] - 5;
+				// end
+				// else if(direction_fifo[i] == 2'b01)begin
+					// block_fill_x[i+1] <= block_fill_x[i] + 5;
+				// end
+				// else if(direction_fifo[i] == 2'b10)begin
+					// block_fill_y[i+1] <= block_fill_y[i] + 5;
+				// end
+				// else if(direction_fifo[i] == 2'b11)begin
+					// block_fill_y[i+1] <= block_fill_y[i] - 5;
+				// end
+				// direction_fifo[i+1] <= direction_fifo[i];
+				
 			end
 			
 			
