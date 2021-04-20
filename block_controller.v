@@ -8,7 +8,8 @@ module block_controller(
 	input up, input down, input left, input right,
 	input [9:0] hCount, vCount,
 	output reg [11:0] rgb,
-	output reg [11:0] background
+	output reg [11:0] background,
+	output reg [5:0] appleCount
    );
 	wire block_fill,block_fill1,block_fill2,block_fill3,block_fill4;
 	wire apple_fill;
@@ -18,7 +19,7 @@ module block_controller(
 	reg [9:0] xpos, ypos;
 	reg [9:0] appXPos, appYPos;
 	reg [1:0] direction;
-	reg [5:0] appleCount;
+	
 	reg [9:0] block_fill_x [20:0];
 	reg [9:0] block_fill_y [20:0];
 	reg [1:0] prev_direction;
@@ -36,7 +37,7 @@ module block_controller(
     	if(~bright )	//force black if not inside the display area
 			rgb = 12'b0000_0000_0000;
 		else if(game_over)
-			rgb = GREEN;
+			rgb = GREEN;			
 		else if (apple_fill) 
 			rgb = YELLOW; 
 		else if (block_fill) 
@@ -86,12 +87,13 @@ module block_controller(
 			rgb=background;
 	end
 	
-	//head collides with any elements in the fifo
+	//apple 
 	assign apple_fill = vCount>=(appYPos-2) && vCount<=(appYPos+2) && hCount>=(appXPos-2) && hCount<=(appXPos+2);
 	
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
-		//{}{}{}{}{}
+	//snake head
 	assign block_fill= vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+	//snake body
 	assign block_fill1 = vCount>=(block_fill_y[1]-5) && vCount<=(block_fill_y[1]+5) && hCount>=(block_fill_x[1]-5) && hCount<=(block_fill_x[1]+5);
 	assign block_fill2 = vCount>=(block_fill_y[2]-5) && vCount<=(block_fill_y[2]+5) && hCount>=(block_fill_x[2]-5) && hCount<=(block_fill_x[2]+5);
 	assign block_fill3 = vCount>=(block_fill_y[3]-5) && vCount<=(block_fill_y[3]+5) && hCount>=(block_fill_x[3]-5) && hCount<=(block_fill_x[3]+5);
@@ -112,11 +114,7 @@ module block_controller(
 	assign block_fill18 = vCount>=(block_fill_y[18]-5) && vCount<=(block_fill_y[18]+5) && hCount>=(block_fill_x[18]-5) && hCount<=(block_fill_x[18]+5);
 	assign block_fill19 = vCount>=(block_fill_y[19]-5) && vCount<=(block_fill_y[19]+5) && hCount>=(block_fill_x[19]-5) && hCount<=(block_fill_x[19]+5);
 	assign block_fill20 = vCount>=(block_fill_y[20]-5) && vCount<=(block_fill_y[20]+5) && hCount>=(block_fill_x[20]-5) && hCount<=(block_fill_x[20]+5);
-	//for(loop of assign)
-	//A[i] ->FIFO 
-	//A[i] = 000000000 or {xpos,ypos}
-	//assign blockfill1 = A[i] && vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
-	//....assign blockfill20
+	
 	
 	always@(posedge clk, posedge rst) 
 	begin
@@ -130,7 +128,7 @@ module block_controller(
 			
 			prev_direction <= 2'b00;
 			
-			for(i = 0; i < 10; i = i+1)
+			for(i = 0; i < 21; i = i+1)
 			begin
 				block_fill_x[i] <= 10'b0000000000;
 				block_fill_y[i] <= 10'b0000000000;
@@ -168,16 +166,9 @@ module block_controller(
 				prev_direction <= 2'b11;
 			end
 			if(direction == 2'b00) begin
-				//Ax[i]				= {324,234} {0000,0000,000} 
-				//Ay[i] = {000,000,000}
-				xpos<=xpos+SPEED; //A[0] <= A[0]={0000,0000}.xpos + SPEED;
-				
+				xpos<=xpos+SPEED; 				
 				block_fill_x[0] <= block_fill_x[0] + SPEED;
-				//FIFO for(int i = 0; i < length_of_array; i ++)
-				//  A[i] <= A[i+1]
-				//A[0] 
-				//change the amount you increment to make the speed faster 
-				if(xpos==800) //these are rough values to attempt looping around, you can fine-tune them to make it more accurate- refer to the block comment above
+				if(xpos==800) //these are rough values to attempt looping around
 				begin
 					xpos<=150;
 					block_fill_x[0] <= 150;
@@ -213,24 +204,8 @@ module block_controller(
 			for(i = 0; i < appleCount; i = i+1)begin
 				block_fill_x[i+1] <= block_fill_x[i];
 				block_fill_y[i+1] <= block_fill_y[i];
-				// if(direction_fifo[i] == 2'b00)begin
-					// block_fill_x[i+1] <= block_fill_x[i] - 5;
-				// end
-				// else if(direction_fifo[i] == 2'b01)begin
-					// block_fill_x[i+1] <= block_fill_x[i] + 5;
-				// end
-				// else if(direction_fifo[i] == 2'b10)begin
-					// block_fill_y[i+1] <= block_fill_y[i] + 5;
-				// end
-				// else if(direction_fifo[i] == 2'b11)begin
-					// block_fill_y[i+1] <= block_fill_y[i] - 5;
-				// end
-				// direction_fifo[i+1] <= direction_fifo[i];
-				
-			end
-			
-			
-			
+						
+			end			
 		end
 	end
 	
@@ -240,18 +215,11 @@ module block_controller(
 			background <= 12'b0000_1111_1111;
 		else 
 			background <= 12'b0000_1111_1111;
-			//if(right)
-				// background <= 12'b1111_1111_0000;
-			// else if(left)
-				// background <= 12'b0000_1111_1111;
-			// else if(down)
-				// background <= 12'b0000_1111_0000;
-			// else if(up)
-				// background <= 12'b0000_0000_1111;
+			
 	end
 	
-	//apple position
-	always@(posedge clk, posedge rst)
+	//apple position TODO: Add random logic
+	always@(posedge vga_clk, posedge rst)
 	begin
 		if(rst)
 		begin
@@ -278,7 +246,6 @@ module block_controller(
 	end
 	
 	
-	
 	//detect collison with snake body and trigger game_over
 	always@(posedge clk, posedge rst)
 	begin
@@ -288,49 +255,15 @@ module block_controller(
 		end
 		else begin
 			for(j = 1; j < appleCount; j = j + 1) begin
-				if( ((xpos -5) < (block_fill_x[i]+2)) && ((xpos +5) > (block_fill_x[i]-2)) && ((ypos-5) < (block_fill_y[i]+2)) && ((ypos+5) > (block_fill_y[i]-2))) begin
+				if( ((xpos -5) < (block_fill_x[j]+2)) && ((xpos +5) > (block_fill_x[j]-2)) && ((ypos-5) < (block_fill_y[j]+2)) && ((ypos+5) > (block_fill_y[j]-2))) begin
 					game_over <= 1;
 				end
 			end
 		end			
 	end
 	
-		// else if(clk)
-		// begin
-		// //changing the position of apple by detecting if the square has touched the apple
-			// if(
-			// vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
-			
+	//random apple generator
 	
-	
-	// always@(posedge clk)
-	// begin	
-		// appleCount = appleCount + 1;
-		// apple_inX <= (xpos > appXPos && xpos < (appXPos + 10));
-		// apple_inY <= (ypos > appYPos && ypos < (appYPos + 10));
-		// apple = apple_inX && apple_inY;
-		// if(appleCount == 1)
-		// begin
-			// appXPos <= 320;
-			// appYPos <= 100;
-		// end
-		// else
-		// begin
-			// if(apple)
-			// begin
-				// if(appleCount%2 == 0)
-				// begin
-					// appXPos <= 320;
-					// appYPos <= 100;
-				// end
-				// else
-				// begin 
-					// appXPos <= 320;
-					// appYPos <= 100;
-				// end
-			// end
-		// end
-	// end
 			
 			
 

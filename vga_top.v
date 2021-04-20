@@ -63,10 +63,11 @@ module vga_top(
 	end
 	wire move_clk;
 	assign move_clk=DIV_CLK[22]; //slower clock to drive the movement of objects on the vga screen
-	assign vga_clk = DIV_CLK[20];
+	assign vga_clk = DIV_CLK[19];
 	wire [11:0] background;
+	wire [5:0] score;
 	display_controller dc(.clk(ClkPort), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
-	block_controller sc(.vga_clk(vga_clk), .clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
+	block_controller sc(.vga_clk(vga_clk), .clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background), .appleCount(score));
 	
 
 
@@ -86,9 +87,9 @@ module vga_top(
 	//SSDs display 
 	//to show how we can interface our "game" module with the SSD's, we output the 12-bit rgb background value to the SSD's
 	assign SSD3 = 4'b0000;
-	assign SSD2 = background[11:8];
-	assign SSD1 = background[7:4];
-	assign SSD0 = background[3:0];
+	assign SSD2 = 4'b0000;
+	assign SSD1 = {0,0,score[5:4]};
+	assign SSD0 = score[3:0];
 
 
 	// need a scan clk for the seven segment display 
