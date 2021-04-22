@@ -30,6 +30,8 @@ module block_controller(
 	parameter DARKGREEN = 12'b0000_1100_0000;
 	parameter TEAL = 12'b0000_1000_1000;
 	parameter RED = 12'b1111_0000_0000;
+	parameter BLACK = 12'b0000_0000_0000;
+	parameter LIGHTYELLOW = 12'b1111_1110_1010;
 	parameter SPEED = 10;
 	integer i, j;
 	
@@ -91,7 +93,7 @@ module block_controller(
 			rgb = DARKGREEN;
 		//if it isnt the apple or body and there is other trigger fill it in as background	
 		else	
-			rgb = background;
+			rgb = BLACK;
 	end
 	//the +-2 for the positions give the dimension of the apple block (i.e. it will be 4x4 pixels)
 	//apple block
@@ -253,9 +255,9 @@ module block_controller(
 	always@(posedge clk, posedge rst) 
 	begin
 		if(rst)
-			background <= 12'b1111_1110_1010;
+			background <= BLACK;
 		else 
-			background <= 12'b1111_1110_1010;
+			background <= BLACK;
 			
 	end
 	
