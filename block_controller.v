@@ -13,8 +13,8 @@ module block_controller(
    );
 	wire block_fill,block_fill1,block_fill2,block_fill3,block_fill4;
 	wire apple_fill;
-	wire [9:0] randomX;
-	wire [8:0] randomY;
+	reg [9:0] randomX;
+	reg [8:0] randomY;
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg game_over;
 	reg [9:0] xpos, ypos;
@@ -154,7 +154,7 @@ module block_controller(
 			corresponds to ~(783,515).  
 		*/
 			//makes the direction continuous until a button changes it's direction
-			//if the prev_direction was not left, can be done without prev_direction variable but for readibilty included
+			//if the prev_direction was not left, can be done without prev_direction variable but included for readibilty
 			if(right && prev_direction != 2'b01) 
 			begin
 				direction <= 2'b00;
@@ -212,7 +212,7 @@ module block_controller(
 			//ie place the snake at the bottom most point along the same x coordinate
 			else if(direction == 2'b10) 
 			begin
-				ypos <= ypos-SPEED; //A[0] <= A[0] + SPEED;
+				ypos <= ypos-SPEED; 
 				block_fill_y[0] <= block_fill_y[0] - SPEED;
 				//snake hits the top of the screen
 				if(ypos == 34)
@@ -238,12 +238,14 @@ module block_controller(
 			end
 			//updating the values in the fifo
 			//realigns the rest of the snake body 
-			for(i = 0; i < appleCount; i = i+1)
-			begin
-				block_fill_x[i+1] <= block_fill_x[i];
-				block_fill_y[i+1] <= block_fill_y[i];
-						
-			end			
+			if(appleCount < 20) begin
+				for(i = 0; i < appleCount; i = i+1)
+				begin
+					block_fill_x[i+1] <= block_fill_x[i];
+					block_fill_y[i+1] <= block_fill_y[i];
+							
+				end		
+			end
 		end
 	end
 	
@@ -258,15 +260,17 @@ module block_controller(
 	end
 	
 	//apple position
-	appleRandomizer(vga_clk, randomX, randomY);
+	// appleRandomizer(vga_clk, randomX, randomY);
 	always@(posedge vga_clk, posedge rst)
 	begin
 		if(rst)
 		begin
 			//assign  the apples corrdinates the random x corrdinate 
-			appXPos = randomX;
+			// appXPos = randomX;
 			//assign  the apples corrdinates the random y corrdinate 
-			appYPos = randomY;
+			// appYPos = randomY;
+			appXPos <= 650;
+			appYPos <= 150;
 			//this is triggered by reset so the snake has not eaten any apples yet
 			appleCount <= 0;
 		end
@@ -277,15 +281,15 @@ module block_controller(
 			//if true then apple was eaten and place a new apple on the random location
 			if( ((xpos - 5) < (appXPos + 2)) && ((xpos + 5) > (appXPos - 2)) && ((ypos - 5) < (appYPos + 2)) && ((ypos + 5) > (appYPos - 2))) 
 			begin 
-				appXPos = randomX;
-				appYPos = randomY;
+				appXPos <= randomX;
+				appYPos <= randomY;
 				appleCount <= appleCount + 1'b1;
 			end
 		end
 	end
 	
 	//detect collison with snake body and trigger game_over
-	always@(posedge clk, posedge rst)
+	always@(posedge vga_clk, posedge rst)
 	begin
 		//game over initlization
 		if(rst)
@@ -297,54 +301,65 @@ module block_controller(
 		begin
 			//access each block and check whether or not it is intersecting with another block
 			//if it is triggre game over otherwise continue through the for loop and exit if no collision is detected
-			for(j = 1; j < appleCount; j = j + 1) 
-			begin
-				if( ((xpos - 5) < (block_fill_x[j] + 2)) && ((xpos + 5) > (block_fill_x[j] - 2)) && ((ypos - 5) < (block_fill_y[j] + 2))
-					&& ((ypos + 5) > (block_fill_y[j] - 2))) 
+			if(appleCount < 20) begin
+				for(j = 1; j < appleCount; j = j + 1) 
 				begin
-					game_over <= 1;
+					if( ((xpos - 5) < (block_fill_x[j] + 2)) && ((xpos + 5) > (block_fill_x[j] - 2)) && ((ypos - 5) < (block_fill_y[j] + 2))
+						&& ((ypos + 5) > (block_fill_y[j] - 2))) 
+					begin
+						game_over <= 1;
+					end
 				end
 			end
 		end			
 	end
 
 	
-endmodule
+
 
 //random apple generator 
 //creates a random coordinate in the x and y direction
 //which is later assigned to the apples x and y coordinate
-module appleRandomizer(vga_clk, randomX, randomY);
-	input vga_clk;
+
+	
 	//random starting values for the pseudo random code
-	output reg [9:0]randomX = 256;
-	output reg [8:0]randomY = 201;
+	// output reg [9:0]randomX = 256;
+	// output reg [8:0]randomY = 201;
 	//option 1
-	always @(posedge vga_clk)
+	always @(posedge vga_clk, posedge rst)
 	begin	
-		//psudorandom assignment in order to maximiza variance among value
-		randomX <= (randomX + 5) % 54 + 156;
-		//if it exceeds the maximum bound in the x direction then assign it manually
-		if(randomX >= 800)
+		if(rst)
 		begin
-			randomX = 500;
-		end
-		//if it viiolates the minimum bound in the x direction then assign it manually
-		if(randomX < 150)
-		begin
-			randomX = 311;
+			randomX <= 256;
+			randomY <= 201;
 		end
 		//psudorandom assignment in order to maximiza variance among value
-		randomY <= (randomY + 3) % 78 + 77;
-		//if it exceeds the maximum bound in the y direction then assign it manually
-		if(randomY >= 514)
-		begin
-			randomY = 300;
-		end
-		//if it violates the minimum bound in the y direction then assign it manually
-		if(randomY < 34)
-		begin
-			randomY = 176;
+		else begin
+			
+			randomX <= (randomX + 5) % 400 + 156;
+			//if it exceeds the maximum bound in the x direction then assign it manually
+			if(randomX >= 800)
+			begin
+				randomX <= 500;
+			end
+			//if it viiolates the minimum bound in the x direction then assign it manually
+			if(randomX < 150)
+			begin
+				randomX <= 311;
+			end
+			//psudorandom assignment in order to maximiza variance among value
+			randomY <= (randomY + 3) % 300 + 77;
+			//if it exceeds the maximum bound in the y direction then assign it manually
+			if(randomY >= 514)
+			begin
+				randomY <= 300;
+			end
+			//if it violates the minimum bound in the y direction then assign it manually
+			if(randomY < 34)
+			begin
+				randomY <= 176;
+			end
+			
 		end
 
 	end
@@ -364,5 +379,5 @@ module appleRandomizer(vga_clk, randomX, randomY);
     // 	randomY <= ((randomY + 5) % 58) + 1;
   	// end
 
-endmodule
 
+endmodule
