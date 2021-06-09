@@ -107,7 +107,7 @@ module block_controller(
 			else if(direction == 2'b11) begin
 				ypos<=ypos+SPEED; //A[0] <= A[0] + SPEED;
 				if(ypos==514)
-					ypos<=34;
+					ypos<=35;
 			end
 			
 			
